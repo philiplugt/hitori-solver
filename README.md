@@ -1,8 +1,7 @@
 
 # Building a solver for Hitori
 
-Task to create a brute force and intelligent (forward checking/minimum remaining values) 
-solver for [Hitori puzzles](https://en.wikipedia.org/wiki/Hitori).
+Task to create a [Hitori](https://en.wikipedia.org/wiki/Hitori) solver using a brute force approach, as well as an intelligent approach that uses forward checking and minimum remaining values.
 
 This assignment was originally for an 2013 RIT Artificial Intelligence course.
 <br>
@@ -21,6 +20,11 @@ Successfully tested and run with Python 3.11
 Original code is from 2013-01-05, and was updated from 2021-04-11 through 2021-04-16
 
 ### How to use
+
+> [!IMPORTANT]   
+> This Hitori solver is unsuited for larger puzzles. Puzzles larger than 6-by-6 may take hours, if not days, to solve with this approach.
+> 
+> This solver is a demonstration of a applying techniques such as brute force, and forward checking with minimum remaining values to a CSP (constraint satisfaction problem). 
 
 Downloaded the files and run with `python hitori.py`
 
