@@ -26,7 +26,7 @@ Downloaded the files and run with `python hitori.py`
 
 Within `hitori.py` within `if __name__ == '__main__':` statement you can set `method = True` to use the brute solver, default is the smart solver (`method = False`).
 
-You can use your own puzzle by setting the `puzzle` variable to a list of lists. 
+You can use your own puzzle by setting the `puzzle` variable to a list of lists. Note that the brute force method is significantly slower than the smart method. For example, puzzle 6 as listed in the source code is solved by the brute force method in 2m 10s, while the smart method takes <2s to solve it.
 
 ### Details
 
