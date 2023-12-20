@@ -5,6 +5,15 @@ Task to create a brute force and intelligent (forward checking/minimum remaining
 solver for [Hitori puzzles](https://en.wikipedia.org/wiki/Hitori).
 
 This assignment was originally for an 2013 RIT Artificial Intelligence course.
+<br>
+<br>
+<div align="center">
+    <img width="300" alt="Unsolved hitori puzzle" src="https://github.com/pxv8780/hitori-solver/assets/22942635/0fc2deef-41b1-4631-9113-13160b667aaa">
+    &nbsp; &nbsp; &nbsp; &nbsp;
+    <img width="300" alt="Solved hitori puzzle" src="https://github.com/pxv8780/hitori-solver/assets/22942635/1bb34bf1-d78e-4bbe-804c-9cdbc82e4c84">
+    <p><sup>A sample hitori puzzle shown in its original (left) and solved states (right)</sup></p>
+    <br>
+</div>
 
 ### Versioning
 
