@@ -13,7 +13,7 @@ def white_group_count(puzzle):
     start_coord = first_white(puzzle)
     
     # Check if a white cell was found, see first_white()
-    if start_coord is None
+    if start_coord is None:
         return 0
     else:
         stack = [start_coord] # Depth first travesal with stack
