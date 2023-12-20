@@ -8,9 +8,8 @@ This assignment was originally for an 2013 RIT Artificial Intelligence course.
 <br>
 <br>
 <div align="center">
-    <img width="300" alt="Unsolved hitori puzzle" src="https://github.com/pxv8780/hitori-solver/assets/22942635/0fc2deef-41b1-4631-9113-13160b667aaa">
-    &nbsp; &nbsp; &nbsp; &nbsp;
-    <img width="300" alt="Solved hitori puzzle" src="https://github.com/pxv8780/hitori-solver/assets/22942635/1bb34bf1-d78e-4bbe-804c-9cdbc82e4c84">
+    <img width="320" alt="hitori" src="https://github.com/pxv8780/hitori-solver/assets/22942635/5a5196de-8b5e-46da-aa58-68e8523fee53">    
+    <img width="320" alt="hitori_solved" src="https://github.com/pxv8780/hitori-solver/assets/22942635/ca26035c-d096-4107-be31-1aa7e670fb0f">
     <p><sup>A sample hitori puzzle shown in its original (left) and solved states (right)</sup></p>
     <br>
 </div>
