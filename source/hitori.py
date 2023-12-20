@@ -84,7 +84,7 @@ def solve_brute(puzzle):
                         states = states + 1
                         state_q.append(new_state)
 
-    print_solution(states, solution_found)
+    print_solution(states, solution, solution_found)
 
 
 # Takes in a puzzle and attemps to solve it using the smart method
