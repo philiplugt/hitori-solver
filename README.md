@@ -7,8 +7,11 @@ This assignment was originally for an 2013 RIT Artificial Intelligence course.
 <br>
 <br>
 <div align="center">
+    &nbsp;
     <img width="320" alt="hitori" src="https://github.com/pxv8780/hitori-solver/assets/22942635/5a5196de-8b5e-46da-aa58-68e8523fee53">    
+    &nbsp;&nbsp;
     <img width="320" alt="hitori_solved" src="https://github.com/pxv8780/hitori-solver/assets/22942635/ca26035c-d096-4107-be31-1aa7e670fb0f">
+    &nbsp;
     <p><sup>A sample hitori puzzle shown in its original (left) and solved states (right)</sup></p>
     <br>
 </div>
