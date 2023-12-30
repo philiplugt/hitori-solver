@@ -5,14 +5,16 @@ from copy import deepcopy
 from collections import deque
 
 # Hitori check imports
-from hitori_check import (test_duplicate_number, 
+from hitori_check2 import (
+    domain_complete,
+    test_duplicate_number, 
     test_adjacent_black, 
     test_white_connected, 
-    valid_black, 
-    unique_values, 
-    is_duplicate, 
+    black_allowed, 
+    unique_white_cells,  
     fc_black, 
-    fc_white)
+    fc_white,
+    cell_surrounded)
 
 
 # Main method of solver
@@ -22,14 +24,18 @@ def solve_hitori(puzzle, method=False):
     else:
         solve_smart(puzzle, "Smart")
 
+
 # Wrapper for timing solvers
 def timeit(func):
     def inner(*args, **kwargs):
         # Print introductory text for solver
-        print_start_text(args[0], args[1])
+        puzzle, mode = args
+
+        print_start_text(puzzle, mode)
         timer_start = perf_counter()
 
-        func(args[0])
+        idx, solution = func(puzzle)
+        print_solution(idx, solution, len(puzzle[len(puzzle[0])-1]))
 
         # Calculate and print time taken
         timer_end = perf_counter()
@@ -37,156 +43,200 @@ def timeit(func):
         print_end_text(time)
     return inner
 
-
 # Takes in a puzzle and attempts to solve it using the brute force method
+# also known as a Generate and Test algorithm
 @timeit
 def solve_brute(puzzle):
-    
-    # Initialize start variables
-    states = 1
-    solution_found = False
-    solution = []
 
-    # Initialize puzzle add initial state
-    current_state = []
-    state_q = deque([deepcopy(puzzle)])
+    def check_solution(state, domain):
+        return (domain_complete(domain) and test_duplicate_number(state))
 
-    # Check if initial puzzle state is the solution
-    if test_duplicate_number(puzzle) and test_adjacent_black(puzzle) \
-            and test_white_connected(puzzle):
-        solution_found = True
-        solution = puzzle
+    idx = 1
+    initial_node = [0, 0]
+    nodes = [initial_node]
+    intial_state = [row[:] for row in puzzle]
+    stack = [intial_state]
+    initial_domain = unique_white_cells(puzzle)
+    domains = [initial_domain]
 
-    # Breadth first search to find first valid solution_found
-    while state_q and not solution_found:
+    while nodes:
+        i, j = nodes.pop()
+        state = stack.pop()
+        domain = domains.pop()
 
-        # Check if current state is the answer
-        current_state = list(state_q.popleft())  
-        if test_duplicate_number(current_state) :
-            solution_found = True
-            solution = current_state
-            break
+        if check_solution(state, domain):
+            return idx, state
+        else:
+            # List of coordinates adjacent to current position
+            u, d, l, r = i-1, i+1, j-1, j+1
 
-        # Create board labelling unique values (cells that must be white due to Rule 1)
-        uniqueboard = unique_values(current_state)
-        for i in range(len(puzzle)):
-            for j in range(len(puzzle)):
+            # Check if coordinates are within array bounds
+            adjacent_cells = []
+            if u >= 0:
+                adjacent_cells.append([u, j])
+            if d < len(state):
+                adjacent_cells.append([d, j])
+            if l >= 0:
+                adjacent_cells.append([i, l])
+            if r < len(state[i]):
+                adjacent_cells.append([i, r])
 
-                # Check value that can be skipped
-                if current_state[i][j] != 0 and uniqueboard[i][j] == 0:
+            # Label cell as B (black) or W (white) if not yet labeled
+            if domain[i][j] not in 'BW':
+                if state[i][j] != 'B':
+                    new_state_white = [row[:] for row in state]
+                    new_domain_white = [row[:] for row in domain]
+                    new_domain_white[i][j] = 'W'
+                    idx += 1
 
-                    # Create a new state by turning a cell black
-                    new_state = deepcopy(current_state)
-                    new_state[i][j] = 0
+                    for xy in adjacent_cells:                
+                        nodes.append(xy)
+                        stack.append(new_state_white)
+                        domains.append(new_domain_white)
 
-                    # Check if rules are upheld by new state, if so add to queue
-                    if valid_black(new_state, i, j) and test_white_connected(new_state):
-                        states = states + 1
-                        state_q.append(new_state)
+                # Black label is only given if conditions are met
+                if domain[i][j] == '.' and black_allowed(domain, i, j):
+                    new_state_black = [row[:] for row in state]
+                    new_state_black[i][j] = 'B'
+                    new_domain_black = [row[:] for row in domain]
+                    new_domain_black[i][j] = 'B'
+                    idx += 1
 
-    print_solution(states, solution, solution_found)
+                    if test_white_connected(new_domain_black):
+                        for xy in adjacent_cells:                
+                            nodes.append(xy)
+                            stack.append(new_state_black)
+                            domains.append(new_domain_black)
+    return idx, None
 
 
 # Takes in a puzzle and attemps to solve it using the smart method
 @timeit
 def solve_smart(puzzle):
 
-    # Initialize start variables
-    states = 1
-    solution_found = False
-    solution = []
+    def check_solution(state, domain):
+        return (domain_complete(domain, True) and test_duplicate_number(state))
 
-    # Depth first search with forward checking and MRV
-    x = [1, 0, -1, 0]
-    y = [0, -1, 0, 1]
-    start_node = [0, 0]
-    nodes = [start_node] # Depth first travesal with stack
-    # Track if a location has already been visited
-    visitboard = [[False for i in puzzle] for j in puzzle]
+    idx = 1
+    initial_node = [0, 0]
+    nodes = [initial_node]
+    intial_state = [row[:] for row in puzzle]
+    stack = [intial_state]
+    initial_domain = unique_white_cells(puzzle, True)
+    domains = [initial_domain]
+    initial_visited = [[False] * len(puzzle[0])] * len(puzzle)
+    visited_list = [initial_visited]
 
-    # Create a grid to track the domain for each puzzle node
-    # Each character represents the remaining domain values for that cell
-    # B is for black, and W for white
-    domain = [['BW' for i in range(len(puzzle))] for j in range(len(puzzle))]
-    # Update black domain to reflect nodes that must be white, due to unique values
-    uniqueboard = unique_values(puzzle)
-    for i in range(len(puzzle)):
-        for j in range(len(puzzle)):
-            if uniqueboard[i][j] == 1:
-                domain[i][j] = 'W' # If unique, cannot be black, thus 'W'
+    while nodes:
+        i, j = nodes.pop()
+        state = stack.pop()
+        domain = domains.pop()
+        visited = visited_list.pop()
 
-    # 3D list to keep track of puzzle and domain
-    state = [list(deepcopy(puzzle)), domain, visitboard]
-    stack = [state]
+        domain = cell_surrounded(domain, i, j)
+        if not domain:
+            continue
 
-    # Check if initial puzzle is the solution
-    if test_duplicate_number(puzzle) and test_adjacent_black(puzzle) \
-            and test_white_connected(puzzle):
-        solution_found = True
-        solution = puzzle
+        if check_solution(state, domain):
+            return idx, state
+        else:
+            # List of coordinates adjacent to current position
+            u, d, l, r = i-1, i+1, j-1, j+1
 
-    # Start depth first search
-    while nodes and not solution_found:
-        [i, j] = nodes.pop()
-        current_state = stack.pop()
-        current_state[2][i][j] = True
+            # Check if coordinates are within array bounds
+            adjacent_cells = []
+            if u >= 0 and not visited[u][j]:
+                adjacent_cells.append([u, j])
+            if d < len(state) and not visited[d][j]:
+                adjacent_cells.append([d, j])
+            if l >= 0 and not visited[i][l]:
+                adjacent_cells.append([i, l])
+            if r < len(state[i]) and not visited[i][r]:
+                adjacent_cells.append([i, r])
 
-        for d in current_state[1][i][j]:
-            new_puzzle = deepcopy(current_state[0])
-            new_domain = deepcopy(current_state[1])
-            new_visit = deepcopy(current_state[2])
-            new_domain[i][j] = d
+            # Label cell as B (black) or W (white) if not yet labeled
+            for d in domain[i][j]:
 
-            # Forward check based on value of domain d
-            if d == 'B':
-                new_puzzle[i][j] = 0
-                if valid_black(new_puzzle, i, j) and test_white_connected(new_puzzle):
-                    states = states + 1 # Each coloring is a new state
-                    new_domain = fc_black(new_domain, i, j) # Forward check rule 2
-                    # No need for MRV, FC reduces all adjacent domains to 1 or 0 already
-                    # There is no gain to be had from sorting domains from 1 to 0
-                    for k in range(4): # Size of x, y lists
-                        if coord_within_bounds( i+x[k], j+y[k], len(puzzle)) \
-                                and not new_visit[i+x[k]][j+y[k]]:
-                            nodes.append([i+x[k], j+y[k]])
-                            stack.append([new_puzzle, new_domain, new_visit])
-            
-            if d == 'W':
-                states = states + 1 # Each coloring is a new state
-                new_domain = fc_white(new_puzzle, new_domain, i, j) # Forward check rule 1
-                # MRV: By adding adjacent domains to the stack, first large domains to 
-                # be traversed later, then smaller domains to be traversed first.
-                for k in range(4): # Size of x, y lists
-                    if coord_within_bounds(i+x[k], j+y[k], len(puzzle)) \
-                            and not new_visit[i+x[k]][j+y[k]] \
-                            and len(new_domain[i+x[k]][j+y[k]]) > 1: 
-                        nodes.append([i+x[k], j+y[k]])
-                        stack.append([new_puzzle, new_domain, new_visit])
-                for k in range(4): # Size of x, y lists
-                    if coord_within_bounds(i+x[k], j+y[k], len(puzzle)) \
-                            and not new_visit[i+x[k]][j+y[k]] \
-                            and len(new_domain[i+x[k]][j+y[k]]) == 1: 
-                        nodes.append([i+x[k], j+y[k]])
-                        stack.append([new_puzzle, new_domain, new_visit])
-                for k in range(4): # Size of x, y lists
-                    if coord_within_bounds(i+x[k], j+y[k], len(puzzle)) \
-                            and not new_visit[i+x[k]][j+y[k]] \
-                            and len(new_domain[i+x[k]][j+y[k]]) < 1: 
-                        nodes.append([i+x[k], j+y[k]])
-                        stack.append([new_puzzle, new_domain, new_visit])
+                # Unique white (V) cells are final, thus proceed to the next node
+                if d == 'V' :
+                    new_visited_unique = [row[:] for row in visited]
+                    new_visited_unique[i][j] = True
+                    
+                    for xy in adjacent_cells:                
+                        nodes.append(xy)
+                        stack.append(state)
+                        domains.append(domain)
+                        visited_list.append(new_visited_unique)
 
-            if test_duplicate_number(new_puzzle):
-                solution_found = True
-                solution = new_puzzle
+                if d == 'W':
+                    new_state_white = [row[:] for row in state]
+                    new_domain_white = [row[:] for row in domain]
+                    new_domain_white[i][j] = 'W'
+                    new_visited_white = [row[:] for row in visited]
+                    new_visited_white[i][j] = True
+                    idx += 1
 
-    print_solution(states, solution, solution_found)
+                    # Forward check for Rule 1
+                    new_domain_white = fc_white(new_state_white, new_domain_white, i, j)
+                    if not new_domain_white:
+                        continue
+
+                    # MRV, add the smallest domains to the stack last so they get handled first
+                    for x, y in adjacent_cells:
+                        if len(new_domain_white[x][y]) > 1:
+                            nodes.append([x, y])
+                            stack.append(new_state_white)
+                            domains.append(new_domain_white)
+                            visited_list.append(new_visited_white)
+
+                    for x, y in adjacent_cells:
+                        if len(new_domain_white[x][y]) == 1:
+                            nodes.append([x, y])
+                            stack.append(new_state_white)
+                            domains.append(new_domain_white)
+                            visited_list.append(new_visited_white)
+
+                # Black label is only given if conditions are met
+                if d == 'B' and black_allowed(state, i, j):
+                    new_state_black = [row[:] for row in state]
+                    new_state_black[i][j] = 'B'
+                    new_domain_black = [row[:] for row in domain]
+                    new_domain_black[i][j] = 'B'
+                    new_visited_black = [row[:] for row in visited]
+                    new_visited_black[i][j] = True
+                    idx += 1
+
+                    if test_white_connected(new_domain_black):
+                        # Forward check for Rule 2
+                        new_domain_black = fc_black(new_domain_black, adjacent_cells)
+                        if not new_domain_black:
+                            continue
+
+                        for x, y in adjacent_cells:            
+                            nodes.append([x, y])
+                            stack.append(new_state_black)
+                            domains.append(new_domain_black)
+                            visited_list.append(new_visited_black)
+    return idx, None
 
 
 # Prints a 2d array for display
 def display(x):
+    start_bar = "─" * (len(x[0]) * 2 + 1)
+    end_bar = "─" * (len(x[len(x)-1]) * 2 + 1)
+    print(f"  ┌{start_bar}┐")
     for i in x:
-        print("  ", end="")
-        print(i)
+        print("  │ ", end="")
+        for j in i: 
+            if isinstance(j, int):
+                char = f"{str(j)} "
+            elif j == "B":
+                char = "█ "
+            else:
+                char = f"{j} "
+            print(char, end="")
+        print("│")
+    print(f"  └{end_bar}┘")
 
 
 # Checks to see if coordinate on grid is within bounds
@@ -196,7 +246,8 @@ def coord_within_bounds(i, j, size):
 
 def print_start_text(puzzle, mode):
     print(f"  Hitori Solver - {mode}")
-    print("  Puzzle to solve:")
+    print("")
+    print("  Initial puzzle state:")
     print("")
     display(puzzle)
     print("")
@@ -209,20 +260,21 @@ def print_end_text(time):
     print("")
 
 
-def print_filler_text():
+def print_filler_text(width):
     print("")
-    print("  ------------")
+    bars = "-" * (width * 2 + 3)
+    print(f"  {bars}")
     print("")
 
 
-def print_solution(states, solution, solution_found):
-    if solution_found:
-        print_filler_text()
+def print_solution(states, solution, puzzle_length):
+    if solution:
+        print_filler_text(len(solution[0]))
         print(f"  Solution found! It took {str(states)} iteration(s):")
         print("")
         display(solution)
     else:
-        print_filler_text()
+        print_filler_text(puzzle_length)
         print(f"  No solution found after {str(states)} iteration(s)")
 
 
@@ -233,16 +285,43 @@ if __name__ == "__main__":
     puzzle2 = [1, 2, 3], [1, 1, 3], [2, 3, 3] # Solvable
     puzzle3 = [1, 2, 3], [2, 2, 3], [1, 1, 3] # Unsolvable
     puzzle4 = [3, 3, 1, 2], [4, 3, 2, 3], [3, 4, 1, 1], [1, 2, 3, 4]
-    puzzle5a = [5, 5, 3, 3, 4], [1, 4, 3, 2, 5], [4, 5, 5, 4, 3], [3, 1, 5, 5, 4], [5, 4, 1, 4, 5]
-    puzzle5b = [0, 5, 0, 3, 4], [1, 4, 3, 2, 5], [4, 5, 5, 4, 3], [3, 1, 5, 5, 4], [5, 4, 1, 4, 5]
+    puzzle5 = [5, 5, 3, 3, 4], [1, 4, 3, 2, 5], [4, 5, 5, 4, 3], [3, 1, 5, 5, 4], [5, 4, 1, 4, 5]
+    puzzle5a = ['B', 5, 'B', 3, 4], [1, 4, 3, 2, 5], [4, 5, 5, 4, 3], [3, 1, 5, 5, 4], [5, 4, 1, 4, 5]
     puzzle6 = [5, 5, 4, 4, 2], [5, 1, 3, 4, 1], [2, 3, 3, 1, 1], [3, 4, 1, 2, 5], [1, 1, 4, 5, 5]
-    puzzle6a = [0, 5, 4, 0, 2], [5, 0, 3, 4, 1], [2, 3, 0, 1, 0], [3, 4, 1, 2, 5], [0, 1, 0, 5, 5]
+    puzzle6a = ['B', 5, 4, 'B', 2], [5, 3, 3, 4, 1], [2, 3, 'B', 1, 'B'], [3, 4, 1, 2, 5], ['B', 1, 'B', 5, 5]
     puzzle7 = [3, 2, 5, 4, 5], [2, 3, 4, 3, 5], [4, 3, 2, 4, 4], [1, 3, 3, 5, 5], [5, 4, 1, 2, 3]
+    puzzle8 = [
+        [4, 8, 1, 6, 3, 2, 5, 7],
+        [3, 6, 7, 2, 1, 6, 5, 4],
+        [2, 3, 4, 8, 2, 8, 6, 1],
+        [4, 1, 6, 5, 7, 7, 3, 5],
+        [7, 2, 3, 1, 8, 5, 1, 2],
+        [3, 5, 6, 7, 3, 1, 8, 4],
+        [6, 4, 2, 3, 5, 4, 7, 8],
+        [8, 7, 1, 4, 2, 3, 5, 6],
+    ]
+
+    puzzle9 = [
+        [3, 2, 4, 1, 3, 1],
+        [2, 1, 1, 4, 1, 3],
+        [1, 3, 3, 5, 6, 2],
+        [6, 3, 1, 1, 5, 1],
+        [3, 5, 4, 1, 4, 6],
+        [4, 1, 6, 3, 1, 2],
+    ]
+
+    puzzle10 = [
+        [1, 2, 5, 1, 4],
+        [2, 4, 3, 2, 4],
+        [4, 1, 2, 5, 3],
+        [3, 5, 4, 1, 2],
+        [2, 3, 2, 4, 5],
+    ]
 
     # Method to use: "True" for brute force; "False" for smart (CSP with Forward checking/MRV)
     method = False
 
     # Set a puzzle
-    puzzle = puzzle6
+    puzzle = puzzle9
 
     solve_hitori(puzzle, method)

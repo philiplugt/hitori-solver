@@ -18,9 +18,16 @@ This assignment was originally for an 2013 RIT Artificial Intelligence course.
 
 ### Versioning
 
-Successfully tested and run with Python 3.11
+Current version has been successfully tested and run with Python 3.11
 
-Original code is from 2013-01-05, and was updated from 2021-04-11 through 2021-04-16
+| Version | Date | Notes |
+| ------- | ---- | ----- |
+| v1 | 2013-01-05 | Original assignment attempt (it wasn't very good) |
+| v2 | 2015-03-06 | First revisit, refactored the brute force solver, still lacked a smart solver |
+| v3 | 2021-04-11 to 2021-04-16| Full implementation as defined in the assignment, but too slow for my liking|
+| current | 2023-12-20 | Full refactor with many optimizations, but still slow for puzzles larger than 6-by-6|
+
+See archive folder for older versions.
 
 ### How to use
 
