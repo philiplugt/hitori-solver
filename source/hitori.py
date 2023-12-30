@@ -1,11 +1,9 @@
 
 # Python imports
 from time import perf_counter
-from copy import deepcopy
-from collections import deque
 
 # Hitori check imports
-from hitori_check2 import (
+from hitori_check import (
     domain_complete,
     test_duplicate_number, 
     test_adjacent_black, 
