@@ -25,7 +25,8 @@ Current version has been successfully tested and run with Python 3.11
 | v1 | 2013-01-05 | Original assignment attempt (it wasn't very good) |
 | v2 | 2015-03-06 | First revisit, refactored the brute force solver, still lacked a smart solver |
 | v3 | 2021-04-11 to 2021-04-16| Full implementation as defined in the assignment, but too slow for my liking|
-| current | 2023-12-20 to 2024-01-01 | Full refactor with optimizations, and fixed a major mistake |
+| v4 | 2023-12-20 to 2024-01-01 | Full refactor with optimizations, and fixed a major mistake |
+| current | 2024-01-14 to 2024-01-16 | Cleaned up the code |
 
 See archive folder for older versions.
 
@@ -62,12 +63,14 @@ I also make sure to mark unique values as soon as they are unique. This skips ha
 
 Finally, I try to reject invalid states as soon as they are know to be invalid. This done by not adding these states to the DFS stack or skipping the loop iteration as soon as possible. But also be using the domain state, instead of the puzzle state to check for invalid states before hand. Indeed, running the `test_white_connected` method with the domain increases the efficiency tremendously for larger puzzles.
 
+Ironically, the current version of the code, which has been cleaned up, is slighty slower than the v4 algorithm. I believe this is because I store each cells edges (coordinates to the adjacent cell), instead of calculating them repeatedly on the fly. However, I believe that calculating the edges is indeed faster than retrieving them from memory.
+
 ### Extra Rules
 
 There are some extra rules that can be implemented to speed things up more,
 
 | Implemented? | Name | Rule |
 | ------------ | ---- | ---- |
-| ✖️ | — |The XYX pattern, because 1 of the Xs has to be black, therefore the Y has to be white |
-| ✖️ | — |The XX-X-X pattern, since black cells cannot be adjacent, an X in the pair must be white, therefore the unpaired Xs must be black |
-| ✔️ | `cell_surrounded` | The 1 adjacent cell must be white. A cell cannot be fully surounded by black, therefore if all but 1 adjacent cell are black, the 1 adjacent cell and current cell must be white | 
+| ✖ | — |The XYX pattern, because 1 of the Xs has to be black, therefore the Y has to be white |
+| ✖ | — |The XX-X-X pattern, since black cells cannot be adjacent, an X in the pair must be white, therefore the unpaired Xs must be black |
+| ✔ | `cell_surrounded` | The 1 adjacent cell must be white. A cell cannot be fully surounded by black, therefore if all but 1 adjacent cell are black, the 1 adjacent cell and current cell must be white | 
