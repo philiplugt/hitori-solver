@@ -62,7 +62,7 @@ def solve_brute(puzzle):
         if check_solution(state):
             return counter, state['puzzle']
 
-        if i >= len(state['puzzle']):
+        if i >= len(state['puzzle']): # If out of bounds i.e. last cell as been reached
             continue
 
         # If initial domain is "V", then value is already unique, so skip
@@ -108,7 +108,7 @@ def solve_smart(puzzle):
         if check_solution(state):
             return counter, state['puzzle']
 
-        if i >= len(state['puzzle']) and j >= len(state['puzzle'][0]):
+        if i >= len(state['puzzle']): # If out of bounds i.e. last cell as been reached
             continue
 
         state = cell_surrounded(state, i, j)
