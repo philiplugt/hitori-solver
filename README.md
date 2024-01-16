@@ -71,6 +71,6 @@ There are some extra rules that can be implemented to speed up the algorithm.
 
 | Implemented? | Name | Rule |
 | ------------ | ---- | ---- |
-| ✘ | — |The XYX pattern, because 1 of the Xs has to be black, therefore the Y has to be white |
-| ✘ | — |The XX-X-X pattern, since black cells cannot be adjacent, an X in the pair must be white, therefore the unpaired Xs must be black |
-| ✔ | `cell_surrounded` | The 1 adjacent cell must be white. A cell cannot be fully surounded by black, therefore if all but 1 adjacent cell are black, the 1 adjacent cell and current cell must be white | 
+| ❌ | — |The XYX pattern, because 1 of the Xs has to be black, therefore the Y has to be white |
+| ❌ | — |The XX-X-X pattern, since black cells cannot be adjacent, an X in the pair must be white, therefore the unpaired Xs must be black |
+| ✅ | `cell_surrounded` | The 1 adjacent cell must be white. A cell cannot be fully surounded by black, therefore if all but 1 adjacent cell are black, the 1 adjacent cell and current cell must be white | 
