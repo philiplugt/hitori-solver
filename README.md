@@ -35,7 +35,7 @@ Downloaded the files and run with `python hitori.py`
 
 Within `hitori.py` within `if __name__ == '__main__':` statement you can set `method = True` to use the brute solver, default is the smart solver (`method = False`).
 
-You can use your own puzzle by setting the `puzzle` variable to a list of lists. Note that the brute force method is significantly slower than the smart method. For example, puzzle 6 as listed in the source code is solved by the brute force method in 2m 10s, while the smart method takes <2s to solve it.
+You can use your own puzzle by setting the `puzzle` variable to a list of lists. Note that the brute force method is significantly slower than the smart method. The smart method can solve the 20-by-20 puzzle in about 1 minute.
 
 ### Details
 
@@ -46,6 +46,28 @@ The game has three conditions that must be met in order to win:
 2. Black values (represented by 0 value) cannot be adjacent (vertically and horizontally) to each other
 3. White values (non-black values) must not be isolated (all connected)
 
-This solver implements 2 methods an brute force solver and a smart solver. The brute force solver traverses the entire puzzle and tries each combination to check for a solution. The only optimization to the brute force solver is that it skips cells that are known to be white due to Rule 1. The smart solver uses techniques such as forward checking and minimum remaining values to solve puzzles significantly faster. It labels the entire puzzle board with values, such as `BW`, `B`, `W`, or ` ` (where B is black, and W is white), to keep track of valid values for each cell. Then via a process of elimination, as defined by Hitori's rules, the total number of combinations are reduced. A cell `BW` can still be black or white, while a cell `B` or `W` can *only* be black or *only* be white. As a result, cells that have been labelled ` ` are empty and can never be valid. Therefore when the solver encounters a ` ` that search traversal is ended, because it cannot contain a solution. The solver then proceeds on with the next (still) valid puzzle state. The solver repeats these steps until a solution if found, or all puzzle states have been exhausted and no solution has been found.
+This solver implements 2 methods an brute force solver and a smart solver. 
 
-In the current version of the solver, I discovered and solved a major mistake I made in earlier versions. While my smart solver was significantly fast for smaller puzzles, such as 5 by 5, the 8 by 8 puzzles were not being solved within a fair about of time. At first I thought was missing optimizations, then I thought the search space had exponentially grown. But I realized something was off when I found other online solvers solving 8 by 8 puzzles in less than a second. I quickly realized the mistake was with my DFS traversal, but I didn't know what exactly. After much deliberation, I found the error. In my original code, the puzzle is setup as a cyclical graph/tree to traverse for solutions, however, Hitori requires no more than linear traversal. This oversight was a major error and hugely increased my time complexity for larger puzzles. The reason this happened is because Rule 3 indeed requires a cyclical graph in order determine the connectedness of white cells. I had incorrectly applied this algorithm to the main solver. But this is wrong, because for the main solver, we only need to select the next unlabelled cell (i.e. neither black or white), regardless of connectedness. A linear traversal is good enough for this. The solver can now solve 8 by 8 puzzles in <0.1 second, and 20 by 20 puzzles in <1 minute, rather than the end of the universe.
+The brute force solver traverses the entire puzzle and tries each combination to check for a solution. The only optimizations to the brute force solver is that it skips cells that are known to be white due to Rule 1, and it does not color cells if it were to break rules 2 or 3. With these optimizations the brute force can solve the smaller puzzles within a reasonable amount of time.
+
+The smart solver uses techniques such as forward checking and minimum remaining values to solve puzzles significantly faster. It labels the entire puzzle board with values, such as `BW`, `B`, `W`, or ` ` (where B is black, and W is white), to keep track of valid values for each cell. Then via a process of elimination, as defined by Hitori's rules, the total number of combinations are reduced. A cell `BW` can still be black or white, while a cell `B` or `W` can *only* be black or *only* be white. As a result, cells that have been labelled ` ` are empty and can never be valid. Therefore when the solver encounters a ` ` that search traversal is ended, because it cannot contain a solution. The solver then proceeds on with the next (still) valid puzzle state. The solver repeats these steps until a solution if found, or all puzzle states have been exhausted and no solution has been found.
+
+### Optimizations
+
+Up to and including version 3 of the solver, I discovered and solved a major mistake I made in earlier versions. While my smart solver was significantly fast for smaller puzzles, such as 5 by 5, the 8 by 8 puzzles were not being solved within a fair about of time. At first I thought was missing optimizations, then I thought the search space had exponentially grown. But I realized something was off when I found other online solvers solving 8 by 8 puzzles in less than a second. I quickly realized the mistake was with my DFS traversal, but I didn't know what exactly. After much deliberation, I found the error. In my original code, the puzzle is setup as a cyclical graph/tree to traverse for solutions, however, Hitori requires no more than linear traversal. This oversight was a major error and hugely increased my time complexity for larger puzzles. The reason this happened is because Rule 3 indeed requires a cyclical graph in order determine the connectedness of white cells. I had incorrectly applied this algorithm to the main solver. But this is wrong, because for the main solver, we only need to select the next unlabelled cell (i.e. neither black or white), regardless of connectedness. A linear traversal is good enough for this. The solver can now solve 8 by 8 puzzles in <0.1 second, and 20 by 20 puzzles in <1 minute, rather than the end of the universe.
+
+Some other important optimizations implemented in later versions are that I avoid using Python's `deepcopy` at all costs. `deepcopy` is significantly slow when creating a new state to add to the DFS stack. For larger puzzles the time wasted adds up.
+
+I also make sure to mark unique values as soon as they are unique. This skips having to test those values as black cells because unique values by default may be a solution.
+
+Finally, I try to reject invalid states as soon as they are know to be invalid. This done by not adding these states to the DFS stack or skipping the loop iteration as soon as possible. But also be using the domain state, instead of the puzzle state to check for invalid states before hand. Indeed, running the `test_white_connected` method with the domain increases the efficiency tremendously for larger puzzles.
+
+### Extra Rules
+
+There are some extra rules that can be implemented to speed things up more,
+
+| Implemented? | Name | Rule |
+| ------------ | ---- | ---- |
+| ✖️ | — |The XYX pattern, because 1 of the Xs has to be black, therefore the Y has to be white |
+| ✖️ | — |The XX-X-X pattern, since black cells cannot be adjacent, an X in the pair must be white, therefore the unpaired Xs must be black |
+| ✔️ | `cell_surrounded` | The 1 adjacent cell must be white. A cell cannot be fully surounded by black, therefore if all but 1 adjacent cell are black, the 1 adjacent cell and current cell must be white | 

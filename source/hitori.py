@@ -120,7 +120,7 @@ def solve_smart(puzzle):
         for j in range(len(puzzle[i])):
             matrix.append([i, j])
 
-    idx = 1
+    idx = 0
     iterr = [0]
     initial_node = [0, 0]
     nodes = [initial_node]

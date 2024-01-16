@@ -188,8 +188,8 @@ def cell_surrounded(domain, i, j):
     if count == len(adjacent_cells)-1:
         for x, y in adjacent_cells:
             if domain[x][y] != 'B':
-                domain[x][y].replace('B', '')
-                domain[i][j].replace('B', '')
+                domain[x][y] = domain[x][y].replace('B', '')
+                domain[i][j] = domain[i][j].replace('B', '')
                 if domain[x][y] == '' or domain[i][j] == '':
                     return None
     return domain
