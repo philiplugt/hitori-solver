@@ -7,19 +7,14 @@ from hitori_puzzles import *
 from hitori_helpers import (
     print_start_text, 
     print_end_text, 
-    print_filler_text, 
     print_solution,
-    display
 )
 from hitori_rules import (
     load_puzzle,
     check_solution,
-    domain_complete,
-    test_duplicate_number, 
-    test_white_connected, 
+    test_white_connected,
     black_allowed, 
-    unique_white_cells,  
-    fc_black, 
+    fc_black,
     fc_white,
     cell_surrounded,
     copy
@@ -166,7 +161,7 @@ def solve_smart(puzzle):
 if __name__ == "__main__":
 
     # Method to use: "True" for brute force; "False" for smart (CSP with Forward checking/MRV)
-    method = True
+    method = False
 
     # Set a puzzle
     puzzle = PUZZLE_10

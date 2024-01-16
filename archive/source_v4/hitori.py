@@ -49,7 +49,7 @@ def solve_brute(puzzle):
     def check_solution(state, domain):
         return (domain_complete(domain) and test_duplicate_number(state))
 
-    idx = 1
+    idx = 0
     initial_node = [0, 0]
     nodes = [initial_node]
     intial_state = [row[:] for row in puzzle]
@@ -381,7 +381,6 @@ if __name__ == "__main__":
         [ 6, 20, 11, 17,  8,  7, 15,  9, 12, 10,  3, 19, 15,  4, 14,  1,  5,  4,  2, 18],
         [ 5, 18, 16, 12, 14, 17, 18, 18, 18, 19, 13,  9, 13, 20, 12,  1,  2, 15,  8, 13],
     ]
-
 
     # Method to use: "True" for brute force; "False" for smart (CSP with Forward checking/MRV)
     method = False

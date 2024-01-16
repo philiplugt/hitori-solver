@@ -22,7 +22,7 @@ def load_puzzle(puzzle):
         edges.append(edges_row)
     state =  {
         'puzzle': puzzle, 
-        'domain': unique_white_cells(puzzle, domain), 
+        'domain': unique_white_cells(puzzle, domain),
         'edges': edges
     }
     return state
@@ -33,7 +33,7 @@ def copy(state):
     domain = [row[:] for row in state['domain']]
     new_state =  {
         'puzzle': puzzle, 
-        'domain': unique_white_cells(puzzle, domain), 
+        'domain': unique_white_cells(puzzle, domain),
         'edges': state['edges']
     }
     return new_state

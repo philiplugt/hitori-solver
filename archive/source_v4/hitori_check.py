@@ -1,5 +1,4 @@
 
-
 # General test - No solution if there are still unset cells
 def domain_complete(domain, smart=False):
     for i in range(len(domain)):
